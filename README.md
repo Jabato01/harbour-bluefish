@@ -48,6 +48,22 @@ ejecutan con:
 tests/run.sh
 ```
 
+También se puede compilar con el Sailfish SDK (`sfdk`), una carpeta por arquitectura:
+
+```bash
+mkdir build-aarch64 && cd build-aarch64
+sfdk -c target=SailfishOS-5.1.0.11-aarch64 build ..
+```
+
+### Dos variantes
+
+- **Normal** (OpenRepos, Chum): incluye `org.jabato.bluefish.service`, que permite que al pulsar
+  una notificación se abra la app aunque esté cerrada.
+- **Tienda de Jolla (Harbour)**: su validador no admite ficheros de servicio D-Bus. Se compila con
+  `sfdk ... build .. -- --with harbour`; las notificaciones se borran al cerrar la app.
+
+En `dist/` están los paquetes de la variante normal y en `dist/harbour/` los de la tienda.
+
 ## Estructura
 
 ```
