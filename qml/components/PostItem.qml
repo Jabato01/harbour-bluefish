@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import Celeste 1.0
+import Bluefish 1.0
 import "../js/feed.js" as Feed
 
 // One post in a list. Expects the ListModel roles built by Feed.modelEntry().
@@ -19,7 +19,25 @@ ListItem {
                                  : column.height + 2 * Theme.paddingMedium
     enabled: !isPlaceholder
     menu: isPlaceholder ? null : contextMenu
-    onClicked: if (!model.focused) app.openThread(post.uri)
+    onClicked: {
+        if (!openLinkAt(bodyLabel, item, mouse) && !model.focused)
+            app.openThread(post.uri)
+    }
+
+    // The list item takes the tap before the text gets it, so links (mentions, hashtags, web
+    // links) are looked up under the finger here. Returns true if a link was opened.
+    function openLinkAt(label, source, mouse) {
+        if (!label.visible || !label.text)
+            return false
+        var p = label.mapFromItem(source, mouse.x, mouse.y)
+        if (p.x < 0 || p.y < 0 || p.x > label.width || p.y > label.height)
+            return false
+        var link = label.linkAt(p.x, p.y)
+        if (!link)
+            return false
+        app.openLink(link)
+        return true
+    }
 
     function toggleLike() {
         if (model.likeUri === "pending")
@@ -91,6 +109,7 @@ ListItem {
         Label {
             width: parent.width
             visible: model.context.length > 0
+            textFormat: Text.PlainText
             text: model.context
             truncationMode: TruncationMode.Fade
             font.pixelSize: Theme.fontSizeExtraSmall
@@ -117,6 +136,7 @@ ListItem {
                 Label {
                     width: parent.width
                     truncationMode: TruncationMode.Fade
+                    textFormat: Text.PlainText
                     text: (post.authorName || "") + (post.verified ? " ✓" : "")
                     font.pixelSize: Theme.fontSizeSmall
                     color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
@@ -153,6 +173,7 @@ ListItem {
             visible: !post.warning || showWarned
 
             Label {
+                id: bodyLabel
                 width: parent.width
                 visible: text.length > 0
                 wrapMode: Text.Wrap
@@ -217,7 +238,8 @@ ListItem {
                     }
                     Label {
                         width: parent.width
-                        text: post.external ? post.external.title : ""
+                        textFormat: Text.PlainText
+                    text: post.external ? post.external.title : ""
                         visible: text.length > 0
                         wrapMode: Text.Wrap
                         maximumLineCount: 2
@@ -226,7 +248,8 @@ ListItem {
                     }
                     Label {
                         width: parent.width
-                        text: post.external ? post.external.domain : ""
+                        textFormat: Text.PlainText
+                    text: post.external ? post.external.domain : ""
                         truncationMode: TruncationMode.Fade
                         font.pixelSize: Theme.fontSizeExtraSmall
                         color: Theme.secondaryColor
@@ -235,11 +258,12 @@ ListItem {
             }
 
             BackgroundItem {
+                id: quoteItem
                 width: parent.width
                 height: post.quote ? quoteColumn.height + 2 * Theme.paddingMedium : 0
                 visible: !!post.quote
                 enabled: !!(post.quote && post.quote.uri)
-                onClicked: app.openThread(post.quote.uri)
+                onClicked: if (!item.openLinkAt(quoteLabel, quoteItem, mouse)) app.openThread(post.quote.uri)
                 Rectangle {
                     anchors.fill: parent
                     color: "transparent"
@@ -264,12 +288,14 @@ ListItem {
                         width: parent.width
                         visible: !!(post.quote && post.quote.uri)
                         truncationMode: TruncationMode.Fade
+                        textFormat: Text.PlainText
                         text: post.quote && post.quote.uri
                               ? post.quote.authorName + "  @" + post.quote.authorHandle : ""
                         font.pixelSize: Theme.fontSizeExtraSmall
                         color: Theme.secondaryHighlightColor
                     }
                     Label {
+                        id: quoteLabel
                         width: parent.width
                         visible: text.length > 0
                         wrapMode: Text.Wrap

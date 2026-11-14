@@ -1,4 +1,4 @@
-Name:       harbour-celeste
+Name:       harbour-bluefish
 Summary:    Cliente no oficial de Bluesky para Sailfish OS
 Version:    0.1.0
 Release:    1
@@ -37,3 +37,4 @@ desktop-file-install --delete-original \
 %{_datadir}/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/*/apps/%{name}.png
+%{_datadir}/dbus-1/services/org.jabato.bluefish.service

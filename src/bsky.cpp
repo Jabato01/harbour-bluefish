@@ -20,7 +20,7 @@ const char *DEFAULT_SERVICE = "https://bsky.social";
 const char *PUBLIC_APPVIEW = "https://public.api.bsky.app";
 const char *APPVIEW_PROXY = "did:web:api.bsky.app#bsky_appview";
 const char *CHAT_PROXY = "did:web:api.bsky.chat#bsky_chat";
-const char *USER_AGENT = "harbour-celeste/0.1 (Sailfish OS)";
+const char *USER_AGENT = "harbour-bluefish/0.1 (Sailfish OS)";
 
 const QString MENTION = QStringLiteral("app.bsky.richtext.facet#mention");
 const QString LINK = QStringLiteral("app.bsky.richtext.facet#link");
@@ -121,11 +121,30 @@ void Bsky::login(const QString &identifier, const QString &password, const QStri
         done(tr("Escribe tu usuario y la contraseña de aplicación"), QVariantMap());
         return;
     }
+    // Only app passwords ("abcd-efgh-ijkl-mnop") are sent. The account password gives full
+    // control of the account and must never reach a third-party app's requests.
+    static const QRegularExpression appPassword(QStringLiteral("^[a-z0-9]{4}(-[a-z0-9]{4}){3}$"),
+                                                QRegularExpression::CaseInsensitiveOption);
+    if (!appPassword.match(password).hasMatch()) {
+        done(tr("Eso no parece una contraseña de aplicación (xxxx-xxxx-xxxx-xxxx). No se ha enviado."),
+             QVariantMap());
+        return;
+    }
 
     QString base = server.trimmed();
     if (!base.isEmpty()) {
-        if (!base.startsWith(QLatin1String("https://")) && !base.startsWith(QLatin1String("http://")))
+        // The password and the session tokens must never travel unencrypted.
+        if (base.startsWith(QLatin1String("http://"), Qt::CaseInsensitive)) {
+            done(tr("El servidor tiene que usar https://"), QVariantMap());
+            return;
+        }
+        if (!base.startsWith(QLatin1String("https://"), Qt::CaseInsensitive))
             base.prepend(QLatin1String("https://"));
+        const QUrl parsed(base);
+        if (!parsed.isValid() || parsed.host().isEmpty() || !parsed.userInfo().isEmpty()) {
+            done(tr("La dirección del servidor no es válida"), QVariantMap());
+            return;
+        }
         while (base.endsWith(QLatin1Char('/')))
             base.chop(1);
         createSession(base, id, password, done);
@@ -296,7 +315,8 @@ QNetworkRequest Bsky::request(const QUrl &url, const QString &bearer) const
 {
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::UserAgentHeader, QByteArray(USER_AGENT));
-    req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    // No redirects: a redirect could carry the session token or the password to another host.
+    // Only the unauthenticated GET lookups in getUrl() follow them.
     if (!bearer.isEmpty())
         req.setRawHeader("Authorization", "Bearer " + bearer.toUtf8());
     return req;
@@ -380,7 +400,10 @@ void Bsky::refreshSession()
 
 void Bsky::getUrl(const QUrl &url, Done done)
 {
-    QNetworkReply *reply = m_net.get(request(url, QString()));
+    // Public handle and DID document lookups: no credentials, and Qt refuses https -> http.
+    QNetworkRequest req = request(url, QString());
+    req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    QNetworkReply *reply = m_net.get(req);
     connect(reply, &QNetworkReply::finished, this, [reply, done]() {
         reply->deleteLater();
         const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();

@@ -14,11 +14,11 @@ int main(int argc, char *argv[])
 {
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     // Must match OrganizationName/ApplicationName in the .desktop file: Sailjail only lets the
-    // app write to ~/.local/share/org.jabato/celeste.
+    // app write to ~/.local/share/org.jabato/bluefish.
     app->setOrganizationName(QStringLiteral("org.jabato"));
-    app->setApplicationName(QStringLiteral("celeste"));
+    app->setApplicationName(QStringLiteral("bluefish"));
 
-    qmlRegisterSingletonType<Bsky>("Celeste", 1, 0, "Bsky", bskyProvider);
+    qmlRegisterSingletonType<Bsky>("Bluefish", 1, 0, "Bsky", bskyProvider);
 
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     view->setSource(SailfishApp::pathToMainQml());

@@ -11,7 +11,7 @@ static QObject *provider(QQmlEngine *, QJSEngine *e) { return new Bsky(e); }
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    qmlRegisterSingletonType<Bsky>("Celeste", 1, 0, "Bsky", provider);
+    qmlRegisterSingletonType<Bsky>("Bluefish", 1, 0, "Bsky", provider);
     QQmlEngine engine;
     int failures = 0;
     QDirIterator it(QString::fromLocal8Bit(argv[1]), QStringList() << "*.qml", QDir::Files,

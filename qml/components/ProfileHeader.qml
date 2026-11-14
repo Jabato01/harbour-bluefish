@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import Celeste 1.0
+import Bluefish 1.0
 import "../js/feed.js" as Feed
 
 // Banner, avatar, bio, counters and follow button of a profile (app.bsky.actor.defs#profileViewDetailed).
@@ -8,6 +8,7 @@ Column {
     id: header
     property var profile
     property bool busy
+    property string actionError
     signal refreshRequested()
 
     readonly property bool isMe: profile && profile.did === Bsky.did
@@ -67,6 +68,7 @@ Column {
         x: Theme.horizontalPageMargin
         width: parent.width - 2 * x
         wrapMode: Text.Wrap
+        textFormat: Text.PlainText
         text: Feed.plain(profile.displayName) || profile.handle
         font.pixelSize: Theme.fontSizeLarge
         color: Theme.highlightColor
@@ -76,6 +78,7 @@ Column {
         x: Theme.horizontalPageMargin
         width: parent.width - 2 * x
         wrapMode: Text.Wrap
+        textFormat: Text.PlainText
         text: "@" + profile.handle + (viewer.followedBy ? "  · " + qsTr("Te sigue") : "")
         font.pixelSize: Theme.fontSizeSmall
         color: Theme.secondaryColor
@@ -109,6 +112,25 @@ Column {
         visible: !!(viewer.blocking || viewer.blockedBy)
         wrapMode: Text.Wrap
         text: viewer.blocking ? qsTr("Has bloqueado esta cuenta") : qsTr("Esta cuenta te ha bloqueado")
+        color: Theme.errorColor
+    }
+
+    Label {
+        x: Theme.horizontalPageMargin
+        width: parent.width - 2 * x
+        visible: !!viewer.muted && !viewer.blocking
+        wrapMode: Text.Wrap
+        text: qsTr("Has silenciado esta cuenta: sus posts no aparecen en tu timeline")
+        color: Theme.secondaryHighlightColor
+    }
+
+    Label {
+        x: Theme.horizontalPageMargin
+        width: parent.width - 2 * x
+        visible: actionError.length > 0
+        wrapMode: Text.Wrap
+        textFormat: Text.PlainText
+        text: actionError
         color: Theme.errorColor
     }
 

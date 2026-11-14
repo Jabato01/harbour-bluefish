@@ -1,11 +1,14 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import Celeste 1.0
+import Bluefish 1.0
 import "../components"
 import "../js/feed.js" as Feed
 
 Page {
     id: page
+
+    // Main section this page belongs to, for the bottom bar.
+    readonly property string navSection: ""
 
     property string uri
     property bool loading
@@ -45,7 +48,8 @@ Page {
 
     SilicaListView {
         id: list
-        anchors.fill: parent
+        anchors { top: parent.top; left: parent.left; right: parent.right; bottom: navBar.top }
+        clip: true
         model: posts
         header: PageHeader { title: qsTr("Hilo") }
 
@@ -66,7 +70,7 @@ Page {
         ViewPlaceholder {
             enabled: posts.count === 0 && !loading
             text: qsTr("No se ha podido cargar el hilo")
-            hintText: error
+            hintText: Feed.noMarkup(error)
         }
 
         VerticalScrollDecorator {}
@@ -76,5 +80,11 @@ Page {
         anchors.centerIn: parent
         size: BusyIndicatorSize.Large
         running: loading && posts.count === 0
+    }
+
+    NavBar {
+        id: navBar
+        anchors.bottom: parent.bottom
+        current: page.navSection
     }
 }

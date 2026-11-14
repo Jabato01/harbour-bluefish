@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4fc3f7"/>
+      <stop offset="1" stop-color="#0b5cc2"/>
+    </linearGradient>
+    <linearGradient id="fish" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#d9efff"/>
+    </linearGradient>
+  </defs>
+  <circle cx="128" cy="128" r="120" fill="url(#sea)"/>
+  <!-- tail -->
+  <path d="M84 128 L42 92 Q54 128 42 164 Z" fill="url(#fish)"/>
+  <!-- dorsal and belly fins -->
+  <path d="M112 90 Q132 58 166 80 Q140 82 128 92 Z" fill="url(#fish)"/>
+  <path d="M120 164 Q134 184 152 176 Q140 170 136 162 Z" fill="url(#fish)"/>
+  <!-- body -->
+  <path d="M72 128 C98 78 172 74 208 128 C172 182 98 178 72 128 Z" fill="url(#fish)"/>
+  <!-- gill -->
+  <path d="M164 102 Q150 128 164 154" fill="none" stroke="#7fc4f5" stroke-width="6" stroke-linecap="round"/>
+  <!-- eye -->
+  <circle cx="182" cy="118" r="9" fill="#0b5cc2"/>
+  <circle cx="185" cy="115" r="3" fill="#ffffff"/>
+  <!-- bubbles -->
+  <circle cx="214" cy="80" r="7" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.85"/>
+  <circle cx="198" cy="56" r="4.5" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.7"/>
+</svg>

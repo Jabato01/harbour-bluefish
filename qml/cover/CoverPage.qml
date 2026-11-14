@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import Celeste 1.0
+import Bluefish 1.0
 
 CoverBackground {
     Column {
@@ -11,7 +11,7 @@ CoverBackground {
         Label {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            text: "Celeste"
+            text: "Bluefish"
             font.pixelSize: Theme.fontSizeLarge
             color: Theme.highlightColor
         }

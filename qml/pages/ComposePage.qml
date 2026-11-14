@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import Celeste 1.0
+import Bluefish 1.0
 
 // New post, reply (replyTo) or quote (quoteOf). replyTo/quoteOf are objects from Feed.post().
 Page {
@@ -54,7 +54,8 @@ Page {
 
             PageHeader {
                 title: replyTo ? qsTr("Responder") : quoteOf ? qsTr("Citar") : qsTr("Nuevo post")
-                description: replyTo ? qsTr("a %1").arg(replyTo.authorName) : ""
+                // The name is shown as given: replace angle brackets so it can't carry markup.
+                description: replyTo ? qsTr("a %1").arg(String(replyTo.authorName || "").replace(/</g, "\u2039").replace(/>/g, "\u203a")) : ""
             }
 
             Label {
@@ -100,6 +101,7 @@ Page {
                 width: parent.width - 2 * x
                 visible: error.length > 0
                 wrapMode: Text.Wrap
+                textFormat: Text.PlainText
                 text: error
                 color: Theme.errorColor
             }

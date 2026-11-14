@@ -19,6 +19,12 @@ function plain(text) {
     return (text || "").replace(/[\u0000-\u0008\u000b-\u001f]/g, "")
 }
 
+// For places that can't be set to plain text (page headers, placeholders, system
+// notifications): without "<" and ">" no markup can be injected (images, links, layout).
+function noMarkup(text) {
+    return plain(text).replace(/</g, "\u2039").replace(/>/g, "\u203a")
+}
+
 function images(embed) {
     var out = []
     var list = (embed && embed.images) || []
@@ -216,4 +222,78 @@ function count(n) {
 
 function rkey(uri) {
     return uri.split("/").pop()
+}
+
+// chat.bsky.convo.defs#convoView -> conversation list entry. `me` is the user's DID.
+function convoEntry(c, me) {
+    var others = (c.members || []).filter(function(m) { return m.did !== me })
+    var names = others.map(function(m) { return plain(m.displayName) || m.handle })
+    var last = c.lastMessage || {}
+    var preview = ""
+    if (last.$type === "chat.bsky.convo.defs#deletedMessageView")
+        preview = qsTr("Mensaje borrado")
+    else if (last.text !== undefined)
+        preview = (last.sender && last.sender.did === me ? qsTr("Tú: ") : "") + plain(last.text)
+    return {
+        convoId: c.id,
+        title: names.join(", ") || qsTr("Conversación"),
+        avatar: (others[0] && others[0].avatar) || "",
+        preview: preview,
+        sentAt: last.sentAt || "",
+        unread: c.unreadCount || 0,
+        request: c.status === "request"
+    }
+}
+
+// chat.bsky.convo.defs#messageView -> chat bubble entry.
+function messageEntry(m, me, render) {
+    var deleted = m.$type === "chat.bsky.convo.defs#deletedMessageView"
+    return {
+        messageId: m.id,
+        mine: !!(m.sender && m.sender.did === me),
+        html: deleted ? "<i>" + qsTr("Mensaje borrado") + "</i>" : render(m.text || "", m.facets || []),
+        text: deleted ? "" : (m.text || ""),
+        sentAt: m.sentAt || ""
+    }
+}
+
+// Text for an app.bsky.notification.listNotifications item, by reason. `name` is who did it.
+function notificationText(reason, name) {
+    switch (reason) {
+    case "like": return qsTr("A %1 le ha gustado tu publicación").arg(name)
+    case "repost": return qsTr("%1 ha republicado tu post").arg(name)
+    case "mention": return qsTr("%1 te ha mencionado en un post").arg(name)
+    case "reply": return qsTr("%1 ha respondido a tu post").arg(name)
+    case "quote": return qsTr("%1 ha citado tu post").arg(name)
+    case "follow": return qsTr("%1 ha empezado a seguirte").arg(name)
+    case "like-via-repost": return qsTr("A %1 le ha gustado tu republicación").arg(name)
+    case "repost-via-repost": return qsTr("%1 ha republicado tu republicación").arg(name)
+    case "starterpack-joined": return qsTr("%1 se ha unido con tu pack de inicio").arg(name)
+    case "subscribed-post": return qsTr("%1 ha publicado un post").arg(name)
+    default: return qsTr("Nueva notificación de %1").arg(name)
+    }
+}
+
+// Icon for a notification reason, relative to qml/ ("" for none).
+function notificationIcon(reason) {
+    switch (reason) {
+    case "like": case "like-via-repost": return "icons/icon-m-heart.svg"
+    case "repost": case "repost-via-repost": return "icons/icon-m-repost.svg"
+    case "mention": return "icons/icon-m-at.svg"
+    case "reply": return "image://theme/icon-m-message-reply"
+    case "quote": return "image://theme/icon-m-message-forward"
+    case "follow": return "image://theme/icon-m-person"
+    default: return "icons/icon-m-bell.svg"
+    }
+}
+
+// The post a notification is about: the liked/reposted post, or the post that mentions you.
+function notificationPost(n) {
+    if (n.reason === "like" || n.reason === "repost" || n.reason === "like-via-repost"
+            || n.reason === "repost-via-repost")
+        // The like/repost record points at the post itself (reasonSubject may be a repost).
+        return (n.record && n.record.subject && n.record.subject.uri) || n.reasonSubject || ""
+    if (n.reason === "mention" || n.reason === "reply" || n.reason === "quote" || n.reason === "subscribed-post")
+        return n.uri
+    return ""
 }
