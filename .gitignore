@@ -1,0 +1,9 @@
+RPMS/
+build-*/
+tests/build/
+*.o
+moc_*
+Makefile
+.qmake.stash
+/harbour-celeste
+documentation.list
