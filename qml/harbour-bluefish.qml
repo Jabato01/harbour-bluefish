@@ -41,6 +41,11 @@ ApplicationWindow {
 
     Component.onCompleted: if (Bsky.loggedIn) loadMe()
 
+    // Without D-Bus activation (Harbour build) a notification left behind could not open the
+    // app once it is closed, so they go away with it.
+    readonly property bool canStartFromNotification: typeof notificationsStartApp === "undefined" || notificationsStartApp
+    Component.onDestruction: if (!app.canStartFromNotification) closeNotifications("")
+
     // Links in post text: web links open in the browser, mentions and hashtags inside the app.
     function openLink(link) {
         if (link.indexOf("bsky-mention:") === 0)

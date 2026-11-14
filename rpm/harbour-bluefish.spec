@@ -1,3 +1,7 @@
+# Jolla's Harbour store does not allow D-Bus service files: build that variant with
+# "sfdk build -- --with harbour". Without the file, a notification can't start the app.
+%bcond_with harbour
+
 Name:       harbour-bluefish
 Summary:    Cliente no oficial de Bluesky para Sailfish OS
 Version:    0.1.0
@@ -21,7 +25,7 @@ Proyecto personal sin vinculación con Bluesky Social PBC.
 %setup -q -n %{name}-%{version}
 
 %build
-%qmake5
+%qmake5 %{?with_harbour:CONFIG+=harbour}
 %make_build
 
 %install
@@ -37,4 +41,11 @@ desktop-file-install --delete-original \
 %{_datadir}/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/*/apps/%{name}.png
+%if %{without harbour}
 %{_datadir}/dbus-1/services/org.jabato.bluefish.service
+%endif
+
+%changelog
+* Sat Nov 14 2026 Jabato <125397292+Jabato01@users.noreply.github.com> - 0.1.0-1
+- First release as Bluefish: timeline, feeds and lists, threads, profiles, search, posting,
+  direct messages and native notifications.

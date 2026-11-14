@@ -21,6 +21,12 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonType<Bsky>("Bluefish", 1, 0, "Bsky", bskyProvider);
 
     QScopedPointer<QQuickView> view(SailfishApp::createView());
+#ifdef BLUEFISH_HARBOUR
+    // No D-Bus activation file in the Harbour build: a notification can't start the app.
+    view->rootContext()->setContextProperty(QStringLiteral("notificationsStartApp"), false);
+#else
+    view->rootContext()->setContextProperty(QStringLiteral("notificationsStartApp"), true);
+#endif
     view->setSource(SailfishApp::pathToMainQml());
     view->show();
     return app->exec();
