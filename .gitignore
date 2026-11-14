@@ -7,3 +7,5 @@ Makefile
 .qmake.stash
 /harbour-celeste
 documentation.list
+.mb2/
+tests/build-*/
